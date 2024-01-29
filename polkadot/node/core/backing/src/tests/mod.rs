@@ -33,8 +33,7 @@ use polkadot_node_subsystem::{
 };
 use polkadot_node_subsystem_test_helpers as test_helpers;
 use polkadot_primitives::{
-	CandidateDescriptor, GroupRotationInfo, HeadData, PersistedValidationData, PvfExecTimeoutKind,
-	ScheduledCore, SessionIndex, LEGACY_MIN_BACKING_VOTES,
+	CandidateDescriptor, GroupRotationInfo, HeadData, PersistedValidationData, PvfExecTimeoutKind, ScheduledCore, SessionIndex, LEGACY_MIN_BACKING_VOTES
 };
 use sp_application_crypto::AppCrypto;
 use sp_keyring::Sr25519Keyring;
@@ -452,6 +451,62 @@ fn backing_second_works() {
 			.await;
 		virtual_overseer
 	});
+}
+
+#[test]
+fn check_statement_encode() {
+	let test_state = TestState::default();
+	let pov = PoV { block_data: BlockData(vec![1, 2, 3]) };
+	let pvd = dummy_pvd();
+	let validation_code = ValidationCode(vec![1, 2, 3]);
+	let expected_head_data = test_state.head_data.get(&test_state.chain_ids[0]).unwrap();
+
+	let pov_hash = pov.hash();
+	let candidate_a = TestCandidateBuilder {
+		para_id: test_state.chain_ids[0],
+		relay_parent: test_state.relay_parent,
+		pov_hash,
+		head_data: expected_head_data.clone(),
+		erasure_root: make_erasure_root(&test_state, pov.clone(), pvd.clone()),
+		validation_code: validation_code.0.clone(),
+		..Default::default()
+	}
+	.build();
+
+	let public2 = Keystore::sr25519_generate_new(
+		&*test_state.keystore,
+		ValidatorId::ID,
+		Some(&test_state.validators[2].to_seed()),
+	)
+	.expect("Insert key into keystore");
+
+	let _with_pvd = SignedFullStatementWithPVD::sign(
+		&test_state.keystore,
+		StatementWithPVD::Seconded(candidate_a.clone(), pvd.clone()),
+		&test_state.signing_context,
+		ValidatorIndex(2),
+		&public2.into(),
+	)
+	.ok()
+	.expect("should be signed");
+
+	let _without_pvd = SignedFullStatement::sign(
+		&test_state.keystore,
+		Statement::Seconded(candidate_a.clone()),
+		&test_state.signing_context,
+		ValidatorIndex(2),
+		&public2.into(),
+	)
+	.ok()
+	.expect("should be signed");
+
+	// println!("statement with pvd: {:?}", with_pvd);
+	// println!("statement without pvd: {:?}", without_pvd);
+
+	// println!("{}","\n\n\n\n\n");
+
+	// println!("signature with pvd: {:?}", with_pvd);
+	// println!("signature without pvd: {:?}", without_pvd);
 }
 
 // Test that the candidate reaches quorum successfully.

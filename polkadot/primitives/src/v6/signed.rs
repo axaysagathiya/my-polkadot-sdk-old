@@ -278,6 +278,7 @@ impl<Payload: EncodeAs<RealPayload>, RealPayload: Encode> UncheckedSigned<Payloa
 		validator_index: ValidatorIndex,
 		key: &ValidatorId,
 	) -> Result<Option<Self>, KeystoreError> {
+		/*
 		let data = Self::payload_data(&payload, context);
 		let signature =
 			keystore.sr25519_sign(ValidatorId::ID, key.as_ref(), &data)?.map(|sig| Self {
@@ -287,6 +288,28 @@ impl<Payload: EncodeAs<RealPayload>, RealPayload: Encode> UncheckedSigned<Payloa
 				real_payload: std::marker::PhantomData,
 			});
 		Ok(signature)
+		*/
+
+
+		let data = Self::payload_data(&payload, context);
+		println!("{:?}", "===============================");
+		println!(" key_type=> {:?}\n\n public=> {:?}\n\n msg=> {:?}",ValidatorId::ID, *key, &data);
+
+		let opt_signature =
+		keystore.sr25519_sign(ValidatorId::ID, key.as_ref(), &data)?;
+		let sig = opt_signature.unwrap();
+		
+		println!("signature in sign func=> {:?}", sig);
+		
+
+		let opt = Some(Self {
+			payload,
+			validator_index,
+			signature: sig.into(),
+			real_payload: std::marker::PhantomData,
+		});
+		println!("{:?}\n\n", "===============================");
+		Ok(opt)
 	}
 
 	/// Validate the payload given the context and public key

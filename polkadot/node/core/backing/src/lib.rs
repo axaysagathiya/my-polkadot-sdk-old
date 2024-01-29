@@ -341,7 +341,7 @@ async fn run_iteration<Context>(
 					panic!("background_validation_tx always alive at this point; qed");
 				}
 			}
-			from_overseer = ctx.recv().fuse() => {
+			from_overseer = ctx.recv().fuse() => { // message comming from collator protocol via overseer.
 				match from_overseer.map_err(Error::OverseerExited)? {
 					FromOrchestra::Signal(OverseerSignal::ActiveLeaves(update)) => {
 						handle_active_leaves_update(
@@ -549,7 +549,7 @@ async fn request_pov(
 	Ok(Arc::new(pov))
 }
 
-async fn request_candidate_validation(
+async fn request_candidate_validation( // no need to create this function, just write direct implementation.
 	sender: &mut impl overseer::CandidateBackingSenderTrait,
 	pvd: PersistedValidationData,
 	code: ValidationCode,
@@ -665,7 +665,7 @@ async fn validate_and_make_available(
 			},
 	};
 
-	let v = {
+	let v: ValidationResult = {
 		request_candidate_validation(
 			&mut sender,
 			persisted_validation_data,
@@ -677,7 +677,7 @@ async fn validate_and_make_available(
 		.await?
 	};
 
-	let res = match v {
+	let res  = match v {
 		ValidationResult::Valid(commitments, validation_data) => {
 			gum::debug!(
 				target: LOG_TARGET,
@@ -695,7 +695,7 @@ async fn validate_and_make_available(
 			)
 			.await;
 
-			match erasure_valid {
+			match erasure_valid { 
 				Ok(()) => Ok(BackgroundValidationOutputs {
 					candidate,
 					commitments,
@@ -770,7 +770,6 @@ async fn handle_active_leaves_update<Context>(
 		Enabled(Result<ProspectiveParachainsMode, ImplicitViewFetchError>),
 		Disabled,
 	}
-
 	// Activate in implicit view before deactivate, per the docs
 	// on ImplicitView, this is more efficient.
 	let res = if let Some(leaf) = update.activated {
@@ -1086,7 +1085,7 @@ enum SecondingAllowed {
 #[overseer::contextbounds(CandidateBacking, prefix = self::overseer)]
 async fn seconding_sanity_check<Context>(
 	ctx: &mut Context,
-	active_leaves: &HashMap<Hash, ActiveLeafState>,
+	active_leaves: &HashMap<Hash, ActiveLeafState>, // perLeaf
 	implicit_view: &ImplicitView,
 	hypothetical_candidate: HypotheticalCandidate,
 	backed_in_path_only: bool,
@@ -1250,7 +1249,7 @@ async fn handle_validated_candidate_command<Context>(
 
 			match command {
 				ValidatedCandidateCommand::Second(res) => match res {
-					Ok(outputs) => {
+					Ok(outputs) => {	
 						let BackgroundValidationOutputs {
 							candidate,
 							commitments,
@@ -1692,7 +1691,7 @@ async fn background_validate_and_make_available<Context>(
 	>,
 ) -> Result<(), Error> {
 	let candidate_hash = params.candidate.hash();
-	if rp_state.awaiting_validation.insert(candidate_hash) {
+	if rp_state.awaiting_validation.insert(candidate_hash) { // just wite this line add call validate_and_make_available as goroutine.
 		// spawn background task.
 		let bg = async move {
 			if let Err(e) = validate_and_make_available(params).await {
@@ -1729,6 +1728,8 @@ async fn kick_off_validation_work<Context>(
 	attesting: AttestingData,
 ) -> Result<(), Error> {
 	let candidate_hash = attesting.candidate.hash();
+	// println!("=> candidate hash in kickOffValidationWork: {:?}", candidate_hash);
+
 	if rp_state.issued_statements.contains(&candidate_hash) {
 		return Ok(())
 	}
@@ -1812,7 +1813,7 @@ async fn maybe_validate_and_import<Context>(
 		if Some(summary.group_id) != rp_state.assignment {
 			return Ok(())
 		}
-		let attesting = match statement.payload() {
+		let attesting: AttestingData = match statement.payload() {
 			StatementWithPVD::Seconded(receipt, _) => {
 				let attesting = AttestingData {
 					candidate: rp_state
@@ -1871,7 +1872,7 @@ async fn maybe_validate_and_import<Context>(
 
 /// Kick off background validation with intent to second.
 #[overseer::contextbounds(CandidateBacking, prefix = self::overseer)]
-async fn validate_and_second<Context>(
+async fn validate_and_second<Context>( // no need to write this function.  write it's implementation directly.
 	ctx: &mut Context,
 	rp_state: &mut PerRelayParentState,
 	persisted_validation_data: PersistedValidationData,
@@ -1891,7 +1892,7 @@ async fn validate_and_second<Context>(
 	let bg_sender = ctx.sender().clone();
 	background_validate_and_make_available(
 		ctx,
-		rp_state,
+		rp_state, 
 		BackgroundValidationParams {
 			sender: bg_sender,
 			tx_command: background_validation_tx.clone(),
@@ -1899,7 +1900,7 @@ async fn validate_and_second<Context>(
 			relay_parent: rp_state.parent,
 			persisted_validation_data,
 			pov: PoVData::Ready(pov),
-			n_validators: rp_state.table_context.validators.len(),
+			n_validators: rp_state.table_context.validators.len(),	
 			make_command: ValidatedCandidateCommand::Second,
 		},
 	)
