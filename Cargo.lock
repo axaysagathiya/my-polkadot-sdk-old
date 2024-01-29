@@ -11478,7 +11478,7 @@ dependencies = [
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "rand_core 0.5.1",
- "schnorrkel 0.9.1",
+ "schnorrkel 0.10.2",
  "sp-authority-discovery",
  "sp-core",
  "tracing-gum",
@@ -11790,7 +11790,7 @@ dependencies = [
  "rand_core 0.5.1",
  "sc-keystore",
  "schnellru",
- "schnorrkel 0.9.1",
+ "schnorrkel 0.10.2",
  "sp-application-crypto",
  "sp-consensus",
  "sp-consensus-babe",
@@ -12251,7 +12251,7 @@ dependencies = [
  "polkadot-erasure-coding",
  "polkadot-parachain-primitives",
  "polkadot-primitives",
- "schnorrkel 0.9.1",
+ "schnorrkel 0.10.2",
  "serde",
  "sp-application-crypto",
  "sp-consensus-babe",
@@ -15978,6 +15978,7 @@ dependencies = [
  "curve25519-dalek-ng",
  "merlin 3.0.0",
  "rand_core 0.6.4",
+ "serde_bytes",
  "sha2 0.9.9",
  "subtle-ng",
  "zeroize",
@@ -16186,6 +16187,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf9e0fcba69a370eed61bcf2b728575f726b50b55cba78064753d708ddc7549e"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde_bytes"
+version = "0.11.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b8497c313fd43ab992087548117643f6fcd935cbf36f176ffda0aacf9591734"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -17056,7 +17066,7 @@ dependencies = [
  "rand 0.8.5",
  "regex",
  "scale-info",
- "schnorrkel 0.9.1",
+ "schnorrkel 0.10.2",
  "secp256k1",
  "secrecy",
  "serde",
