@@ -293,7 +293,7 @@ impl<Payload: EncodeAs<RealPayload>, RealPayload: Encode> UncheckedSigned<Payloa
 
 		let data = Self::payload_data(&payload, context);
 		println!("{:?}", "===============================");
-		println!(" key_type=> {:?}\n\n public=> {:?}\n\n msg=> {:?}",ValidatorId::ID, *key, &data);
+		println!(" key_type=> {:?}\n\n public=> {:?}\n\n msg=> {:?}\n\n",ValidatorId::ID, *key, &data);
 
 		let opt_signature =
 		keystore.sr25519_sign(ValidatorId::ID, key.as_ref(), &data)?;

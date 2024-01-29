@@ -480,7 +480,7 @@ fn check_statement_encode() {
 	)
 	.expect("Insert key into keystore");
 
-	let _with_pvd = SignedFullStatementWithPVD::sign(
+	let with_pvd = SignedFullStatementWithPVD::sign(
 		&test_state.keystore,
 		StatementWithPVD::Seconded(candidate_a.clone(), pvd.clone()),
 		&test_state.signing_context,
@@ -488,9 +488,10 @@ fn check_statement_encode() {
 		&public2.into(),
 	)
 	.ok()
+	.flatten()
 	.expect("should be signed");
 
-	let _without_pvd = SignedFullStatement::sign(
+	let without_pvd = SignedFullStatement::sign(
 		&test_state.keystore,
 		Statement::Seconded(candidate_a.clone()),
 		&test_state.signing_context,
@@ -498,7 +499,10 @@ fn check_statement_encode() {
 		&public2.into(),
 	)
 	.ok()
+	.flatten()
 	.expect("should be signed");
+
+	assert_eq!(with_pvd.signature(), without_pvd.signature());
 
 	// println!("statement with pvd: {:?}", with_pvd);
 	// println!("statement without pvd: {:?}", without_pvd);
